@@ -1,0 +1,358 @@
+/* Reset & Base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f4f8;
+  color: #2d3748;
+  min-height: 100vh;
+}
+
+/* Header */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 8px rgba(0,0,0,.06);
+}
+.header-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.logo {
+  font-size: 1.1rem; font-weight: 700; color: #2d3748;
+  letter-spacing: .3px;
+}
+.tab-nav { display: flex; gap: 4px; }
+.tab-btn {
+  padding: 7px 22px; border: none; border-radius: 8px;
+  font-size: .95rem; font-weight: 600; cursor: pointer;
+  background: transparent; color: #718096;
+  transition: background .2s, color .2s;
+}
+.tab-btn:hover  { background: #f0f4f8; color: #2d3748; }
+.tab-btn.active { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+
+/* Layout */
+.tab-page { display: none; padding: 28px 16px 60px; }
+.tab-page.active { display: block; }
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* Card */
+.card {
+  background: #fff; border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  margin-bottom: 24px;
+}
+.card-title {
+  font-size: 1.05rem; font-weight: 700; color: #4a5568;
+  padding-bottom: 12px; margin-bottom: 20px;
+  border-bottom: 2px solid #f0f4f8;
+}
+
+/* Input Card */
+.input-card { padding: 20px 24px; }
+textarea {
+  width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 14px; font-size: 1rem; resize: vertical;
+  outline: none; font-family: inherit; color: #2d3748;
+  transition: border-color .2s;
+}
+textarea:focus { border-color: #667eea; }
+.input-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-top: 12px;
+}
+.sample-btns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sample-label { font-size: .85rem; color: #a0aec0; }
+.sample-btn {
+  padding: 5px 14px; border: 1.5px solid #e2e8f0; border-radius: 999px;
+  background: #fff; font-size: .85rem; color: #4a5568; cursor: pointer;
+  transition: all .2s;
+}
+.sample-btn:hover { border-color: #667eea; color: #667eea; }
+.input-actions { display: flex; align-items: center; gap: 10px; }
+.char-count { font-size: .85rem; color: #a0aec0; }
+
+/* Buttons */
+.btn {
+  padding: 9px 22px; border: none; border-radius: 8px;
+  font-size: .92rem; font-weight: 600; cursor: pointer;
+  transition: opacity .2s, transform .1s;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+.btn-primary:hover { opacity: .9; }
+.btn-ghost { background: #edf2f7; color: #4a5568; }
+.btn-ghost:hover { background: #e2e8f0; }
+.btn-sm { padding: 6px 14px; font-size: .85rem; }
+
+/* Loading */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; color: #667eea;
+}
+.spinner {
+  width: 22px; height: 22px;
+  border: 3px solid #e2e8f0; border-top-color: #667eea;
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+
+/* Result Grid */
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 760px) { .result-grid { grid-template-columns: 1fr; } }
+
+/* Gauge */
+.gauge-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+.gauge-wrap { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+.gauge-label {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none;
+}
+.gauge-value { display: block; font-size: 1.9rem; font-weight: 800; color: #2d3748; line-height: 1.1; }
+.gauge-unit   { font-size: 1rem; font-weight: 700; color: #2d3748; }
+.verdict-col  { flex: 1; min-width: 160px; }
+.verdict-badge {
+  display: inline-block; padding: 7px 16px; border-radius: 999px;
+  font-size: .92rem; font-weight: 700; margin-bottom: 16px;
+}
+.verdict-ai    { background: #fff5f5; color: #e53e3e; border: 1.5px solid #fc8181; }
+.verdict-human { background: #f0fff4; color: #38a169; border: 1.5px solid #68d391; }
+.prob-list { display: flex; flex-direction: column; gap: 10px; }
+.prob-row  { display: flex; align-items: center; gap: 8px; }
+.prob-name { width: 32px; font-size: .85rem; color: #718096; }
+.bar-bg    { flex: 1; height: 9px; background: #edf2f7; border-radius: 999px; overflow: hidden; }
+.bar       { height: 100%; border-radius: 999px; transition: width .6s ease; }
+.bar-ai    { background: linear-gradient(90deg,#fc8181,#e53e3e); }
+.bar-human { background: linear-gradient(90deg,#68d391,#38a169); }
+.prob-val  { width: 42px; text-align: right; font-size: .85rem; font-weight: 600; }
+.conf-text { margin-top: 12px; font-size: .88rem; color: #718096; }
+
+/* Tracking */
+.tracking-section { border-top: 1px solid #f0f4f8; padding-top: 18px; }
+.section-sub { font-size: .95rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
+.track-note  { font-size: .82rem; color: #a0aec0; margin-bottom: 12px; }
+.tracking-bars { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.track-row   { display: flex; align-items: center; gap: 8px; }
+.track-name  { width: 120px; font-size: .85rem; color: #4a5568; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-bar-bg { flex: 1; height: 10px; background: #edf2f7; border-radius: 999px; overflow: hidden; }
+.track-bar   { height: 100%; border-radius: 999px; transition: width .6s ease; }
+.track-val   { width: 46px; text-align: right; font-size: .85rem; font-weight: 600; }
+.best-model  { font-size: .9rem; color: #4a5568; }
+
+/* Contribution */
+.contrib-bars { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.detail-toggle { width: 100%; text-align: left; margin-bottom: 0; }
+.surface-detail {
+  margin-top: 12px; display: flex; flex-direction: column; gap: 7px;
+  border-top: 1px solid #f0f4f8; padding-top: 12px;
+}
+.surface-row { display: flex; align-items: center; gap: 8px; }
+.surface-name { width: 100px; font-size: .8rem; color: #718096; }
+.surface-bar-bg { flex: 1; height: 7px; background: #edf2f7; border-radius: 999px; overflow: hidden; }
+.surface-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#b794f4,#667eea); transition: width .5s ease; }
+.surface-val { width: 40px; text-align: right; font-size: .8rem; color: #718096; }
+
+/* 主动水印检测卡片 */
+.watermark-card { border-top: 3px solid #667eea; }
+.wm-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;
+  border: 1.5px solid #c3d0f0; background: #f7f8ff;
+  transition: background .3s, border-color .3s;
+}
+.wm-banner-main { display: flex; align-items: center; gap: 14px; }
+.wm-verdict { font-size: 1.12rem; font-weight: 800; color: #2d3748; }
+.wm-sub { font-size: .84rem; color: #718096; margin-top: 3px; }
+
+.wm-banner.wm-detected { background: #f0fff4; border-color: #68d391; }
+.wm-banner.wm-detected .wm-verdict { color: #2f855a; }
+.wm-banner.wm-clean    { background: #f7f8ff; border-color: #c3d0f0; }
+.wm-banner.wm-disabled { background: #f7fafc; border-color: #e2e8f0; }
+.wm-banner.wm-disabled .wm-verdict { color: #718096; }
+
+.wm-source-box {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  padding: 8px 18px; background: #fff; border-radius: 10px;
+  border: 1.5px solid #68d391;
+}
+.wm-source-label { font-size: .72rem; color: #718096; }
+.wm-source { font-size: 1.3rem; font-weight: 800; color: #2f855a; letter-spacing: .3px; }
+.wm-z { font-size: .8rem; color: #4a5568; }
+
+.wm-scores-head { margin-bottom: 12px; }
+.wm-score-bars { display: flex; flex-direction: column; gap: 12px; }
+.wm-score-row { display: flex; align-items: center; gap: 10px; }
+.wm-score-name {
+  width: 150px; font-size: .86rem; font-weight: 600; color: #4a5568;
+  display: flex; flex-direction: column; line-height: 1.3;
+}
+.wm-key { font-size: .7rem; color: #a0aec0; font-weight: 500; }
+.wm-score-track {
+  position: relative; flex: 1; height: 14px;
+  background: #edf2f7; border-radius: 999px;
+}
+.wm-score-bar {
+  height: 100%; border-radius: 999px; background: #cbd5e0;
+  transition: width .6s ease;
+}
+.wm-score-row.hit .wm-score-bar { background: linear-gradient(90deg,#68d391,#38a169); }
+.wm-thr-line {
+  position: absolute; top: -3px; bottom: -3px; width: 2px;
+  background: #e53e3e; border-radius: 2px;
+}
+.wm-score-val { width: 50px; text-align: right; font-size: .92rem; font-weight: 700; color: #718096; }
+.wm-score-row.hit .wm-score-val { color: #2f855a; }
+.wm-note { margin-top: 16px; font-size: .8rem; color: #a0aec0; line-height: 1.65; }
+
+/* 阶段分隔标题 */
+.stage-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 4px 0 18px; font-size: .9rem; color: #718096;
+}
+.stage-tag {
+  background: linear-gradient(135deg,#667eea,#764ba2); color: #fff;
+  padding: 3px 12px; border-radius: 999px; font-size: .78rem; font-weight: 700;
+  white-space: nowrap;
+}
+
+/* 跨领域热力表格 */
+.heatmap-table { margin-top: 16px; overflow-x: auto; }
+.heatmap-table table {
+  width: 100%; border-collapse: collapse; font-size: .88rem;
+}
+.heatmap-table th, .heatmap-table td {
+  padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left;
+}
+.heatmap-table thead th {
+  background: #f7f8ff; font-weight: 700; color: #4a5568; text-align: center;
+}
+.heatmap-table .corner {
+  background: #f7f8ff; color: #a0aec0; font-size: .8rem; font-style: italic;
+}
+.heatmap-table .row-label {
+  font-weight: 700; color: #4a5568; background: #f7f8ff; white-space: nowrap;
+}
+.heatmap-table .diag {
+  color: #e53e3e; font-weight: 800; font-size: 1rem;
+  text-align: center; background: #fff5f5;
+}
+.ht-bar-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.ht-bar {
+  height: 8px; background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 999px; flex-shrink: 0;
+}
+.ht-bar-wrap span { font-size: .85rem; color: #4a5568; white-space: nowrap; }
+
+/* Experiment Page */
+/* 章节分组标题（对应报告 5.1 / 5.2 / 5.3） */
+.exp-section-title {
+  display: flex; align-items: baseline; gap: 12px;
+  margin: 34px 4px 16px;
+}
+.exp-section-title:first-of-type { margin-top: 8px; }
+.exp-section-title h2 {
+  font-size: 1.15rem; font-weight: 800; color: #2d3748;
+  border-left: 4px solid #667eea; padding-left: 12px;
+}
+.exp-section-title .sec-sub { font-size: .84rem; color: #a0aec0; margin-left: auto; }
+
+/* 双图并排 */
+.exp-img-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 760px) { .exp-img-pair { grid-template-columns: 1fr; } }
+.exp-img-pair .exp-img-wrap { margin-top: 0; }
+.exp-img-cap { font-size: .8rem; color: #a0aec0; text-align: center; padding: 6px 0 8px; }
+
+/* 数据小注 */
+.exp-note { font-size: .8rem; color: #a0aec0; line-height: 1.65; margin-top: 10px; }
+
+.exp-img-wrap {
+  margin-top: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f7f8ff;
+  text-align: center;
+}
+.exp-img-wrap img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}.exp-intro .intro-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 600px) { .exp-intro .intro-grid { grid-template-columns: repeat(2,1fr); } }
+.intro-stat {
+  background: #f7f8ff; border-radius: 12px; padding: 16px;
+  text-align: center;
+}
+.stat-num   { display: block; font-size: 1.6rem; font-weight: 800; color: #667eea; }
+.stat-label { font-size: .82rem; color: #718096; margin-top: 4px; display: block; }
+.intro-desc { font-size: .9rem; color: #718096; line-height: 1.7; }
+
+.exp-card .exp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.exp-tag {
+  background: linear-gradient(135deg,#667eea,#764ba2); color: #fff;
+  padding: 3px 12px; border-radius: 999px; font-size: .8rem; font-weight: 700;
+  white-space: nowrap;
+}
+.exp-card h2 { font-size: 1.05rem; font-weight: 700; color: #2d3748; }
+.exp-conclusion {
+  background: #f7f8ff; border-left: 3px solid #667eea;
+  padding: 10px 14px; border-radius: 0 8px 8px 0;
+  font-size: .88rem; color: #4a5568; margin-bottom: 14px; line-height: 1.6;
+}
+.exp-desc { font-size: .9rem; color: #718096; line-height: 1.75; margin-bottom: 16px; }
+
+.exp-chart-placeholder {
+  background: #f7f8ff; border: 2px dashed #c3d0f0;
+  border-radius: 12px; padding: 32px;
+}
+.placeholder-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: #a0aec0; font-size: .9rem;
+}
+.placeholder-icon { font-size: 2rem; }
+
+/* 实验四数据 */
+.exp-stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px;
+}
+@media (max-width: 600px) { .exp-stats-row { grid-template-columns: repeat(2,1fr); } }
+.exp-stat-item {
+  background: #f7f8ff; border-radius: 12px; padding: 14px;
+  text-align: center;
+}
+.exp-stat-num { display: block; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+.exp-stat-num.high { color: #38a169; }
+.exp-stat-num.mid  { color: #667eea; }
+.exp-stat-num.low  { color: #e53e3e; }
+.exp-stat-label { font-size: .78rem; color: #718096; line-height: 1.5; }
+
+/* 实验五消融表 */
+.ablation-table { border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.ablation-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 2fr;
+  padding: 10px 16px; font-size: .88rem;
+  border-bottom: 1px solid #f0f4f8;
+  align-items: center;
+}
+.ablation-row:last-child { border-bottom: none; }
+.ablation-row.header { background: #f7f8ff; font-weight: 700; color: #4a5568; }
+.ablation-row.highlight { background: #f0fff4; }
+.ablation-row .down     { color: #e53e3e; font-weight: 700; }
+.ablation-row .up       { color: #38a169; font-weight: 700; }
+.ablation-row .low-acc  { color: #ed8936; font-weight: 700; }

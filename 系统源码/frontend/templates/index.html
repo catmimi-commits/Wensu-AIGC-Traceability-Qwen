@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>闻溯——AIGC新闻文本双轨制溯源与治理系统</title>
+  <link rel="icon" type="image/png" href="/static/icon.png" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">闻溯 · AIGC新闻文本双轨制溯源与治理系统</div>
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="detect">实时检测</button>
+        <button class="tab-btn" data-tab="results">实验成果</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 实时检测页 -->
+  <main id="tab-detect" class="tab-page active">
+    <div class="container">
+
+      <!-- 输入区 -->
+      <section class="card input-card">
+        <textarea id="inputText" placeholder="请在此粘贴或输入待检测的新闻文本…" rows="6"></textarea>
+        <div class="input-footer">
+          <div class="sample-btns">
+            <span class="sample-label">示例：</span>
+            <button class="sample-btn" data-domain="体育">体育</button>
+            <button class="sample-btn" data-domain="科技">科技</button>
+            <button class="sample-btn" data-domain="教育">教育</button>
+            <button class="sample-btn" data-domain="时政">时政</button>
+          </div>
+          <div class="input-actions">
+            <span id="charCount" class="char-count">0 字</span>
+            <button id="clearBtn" class="btn btn-ghost">清空</button>
+            <button id="detectBtn" class="btn btn-primary">开始检测</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 加载动画 -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div><span>检测中…</span>
+      </div>
+
+      <!-- 结果区 -->
+      <div id="resultSection" class="hidden">
+
+        <!-- 第一级：主动水印检测 -->
+        <section id="watermarkCard" class="card watermark-card">
+          <h2 class="card-title">第一级 · 主动水印检测</h2>
+          <div id="wmBanner" class="wm-banner">
+            <div class="wm-banner-main">
+              <div>
+                <div id="wmVerdict" class="wm-verdict">检测中…</div>
+                <div id="wmSub" class="wm-sub"></div>
+              </div>
+            </div>
+            <div id="wmSourceBox" class="wm-source-box hidden">
+              <span class="wm-source-label">水印来源模型</span>
+              <span id="wmSource" class="wm-source">--</span>
+              <span class="wm-z">Z-score = <strong id="wmMaxZ">--</strong></span>
+            </div>
+          </div>
+
+          <div class="wm-scores-head">
+            <span class="section-sub">各候选密钥 Z-score（判定阈值 <strong id="wmThreshold">3.5</strong>，红线为阈值）</span>
+          </div>
+          <div id="wmScoreBars" class="wm-score-bars"></div>
+          <p class="wm-note">原理：用每个模型的专属密钥复现 KGW「绿名单」，统计文本中落在绿名单里的 token 比例并标准化为 Z-score。Z 越高越可能出自该模型，最高值 ≥ 阈值即判定含水印并直接溯源。</p>
+        </section>
+
+        <!-- 第二级标题：仅在未检出水印时显示 -->
+        <div id="passiveHeader" class="stage-divider hidden">
+          <span class="stage-tag">第二级</span>
+          <span id="passiveHeaderText">未检测到明显水印，已转入被动文风检测</span>
+        </div>
+
+        <!-- 检测结果与特征贡献度 -->
+        <div class="result-grid" id="passiveSection">
+
+          <!-- 检测结果卡片 -->
+          <section class="card result-card">
+            <h2 class="card-title">检测结果</h2>
+
+            <!-- 仪表盘与判断结论 -->
+            <div class="gauge-row">
+              <div class="gauge-wrap">
+                <canvas id="gaugeChart" width="180" height="180"></canvas>
+                <div class="gauge-label">
+                  <span id="aiProbText" class="gauge-value">--</span>
+                  <span class="gauge-unit">AI率</span>
+                </div>
+              </div>
+              <div class="verdict-col">
+                <div id="verdictBadge" class="verdict-badge">--</div>
+                <div class="prob-list">
+                  <div class="prob-row">
+                    <span class="prob-name">AI</span>
+                    <div class="bar-bg"><div id="barAI" class="bar bar-ai"></div></div>
+                    <span id="probAIText" class="prob-val">--%</span>
+                  </div>
+                  <div class="prob-row">
+                    <span class="prob-name">人类</span>
+                    <div class="bar-bg"><div id="barHuman" class="bar bar-human"></div></div>
+                    <span id="probHumanText" class="prob-val">--%</span>
+                  </div>
+                </div>
+                <p class="conf-text">置信度：<strong id="confidenceText">--%</strong></p>
+              </div>
+            </div>
+
+            <!-- 溯源结果 -->
+            <div class="tracking-section">
+              <h3 class="section-sub">Qwen版本溯源</h3>
+              <p id="trackingNote" class="track-note"></p>
+              <div id="trackingBars" class="tracking-bars"></div>
+              <p class="best-model">最可能来源：<strong id="bestModel">--</strong></p>
+            </div>
+          </section>
+
+          <!-- 特征贡献度卡片 -->
+          <section class="card contrib-card">
+            <h2 class="card-title">特征贡献度</h2>
+
+            <div id="contribBars" class="contrib-bars"></div>
+
+            <!-- 展开细分按钮 -->
+            <button id="toggleDetail" class="btn btn-ghost btn-sm detail-toggle">
+              ▶ 点击展开12项细分
+            </button>
+            <div id="surfaceDetail" class="surface-detail hidden"></div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 实验成果页 -->
+  <main id="tab-results" class="tab-page hidden">
+    <div class="container">
+
+      <!-- 数据集说明 -->
+      <section class="card exp-intro">
+        <h2 class="card-title">实验数据集说明</h2>
+        <div class="intro-grid">
+          <div class="intro-stat"><span class="stat-num">15,764</span><span class="stat-label">条高质量文本</span></div>
+          <div class="intro-stat"><span class="stat-num">4</span><span class="stat-label">个新闻领域</span></div>
+          <div class="intro-stat"><span class="stat-num">3</span><span class="stat-label">个Qwen版本</span></div>
+          <div class="intro-stat"><span class="stat-num">300字</span><span class="stat-label">以内改写压缩</span></div>
+        </div>
+        <p class="intro-desc">基于清华 THUCNews 语料，覆盖体育、科技、教育、时政四个领域，每领域含人类文本及Qwen1.5、Qwen2、Qwen2.5生成文本，形成"4领域×4来源"平衡结构。数据构建模拟真实"概括性改写"场景，将500-1000字原始新闻压缩至300字以内，聚焦文风差异而非内容复述；并从中抽取源文本用于主动KGW水印的嵌入与检测实验。评价指标含准确率、精确率、召回率与Macro F1。</p>
+      </section>
+
+      <!-- ========== 5.1 主动水印实验 ========== -->
+      <div class="exp-section-title">
+        <h2>主动水印实验</h2>
+        <span class="sec-sub">闭域无攻击基准 · KGW 水印</span>
+      </div>
+
+      <!-- 5.1.2 基准水印检出性能 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验一</span>
+          <h2>基准水印检出性能</h2>
+        </div>
+        <div class="exp-conclusion">
+闭域无攻击环境下三模型误报率均为 0.00%，检出率 83%~91%；模型参数量增大使检出率微幅下降，但带水印样本 Z-score 仍远超阈值（Qwen2.5-1.5B 达 8.57）。
+        </div>
+        <p class="exp-desc">为三种模型分别分配正交伪随机密钥（Key 62 / 52 / 42），在绿名单比例 γ=0.25、判定阈值 τ=3.5 下，每模型各生成 200 组无水印与 200 组带水印样本。随着参数量由 0.5B 增至 1.5B，其 logits 分布更陡峭、置信度更高，固定强度偏置更难改变采样结果，导致检出率符合理论预期地微幅下降。</p>
+        <div class="heatmap-table">
+          <table>
+            <thead>
+              <tr>
+                <th class="corner">模型</th>
+                <th>参数量</th>
+                <th>检出率 TPR</th>
+                <th>误报率 FPR</th>
+                <th>归因准确率</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-label">Qwen1.5-0.5B</td>
+                <td>0.5B</td>
+                <td class="diag">91.0%</td>
+                <td>0.00%</td>
+                <td>100%</td>
+              </tr>
+              <tr>
+                <td class="row-label">Qwen2-0.5B</td>
+                <td>0.5B</td>
+                <td class="diag">87.0%</td>
+                <td>0.00%</td>
+                <td>100%</td>
+              </tr>
+              <tr>
+                <td class="row-label">Qwen2.5-1.5B</td>
+                <td>1.5B</td>
+                <td class="diag">83.0%</td>
+                <td>0.00%</td>
+                <td>100%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="exp-note">注：无水印文本平均 Z-score 稳定于 0 附近（-0.14 ~ 0.09），判定阈值 τ=3.5 可完美隔离普通文本、杜绝误杀；成功注入水印样本 Z-score 显著高于阈值（如 Qwen2.5-1.5B 达 8.57）。</p>
+      </section>
+
+      <!-- 5.1.3 跨密钥源头归因 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验二</span>
+          <h2>跨密钥源头归因与伪随机正交性验证</h2>
+        </div>
+        <div class="exp-conclusion">
+将三模型带水印文本混合后交叉解码，源头归因准确率达 100.0%，跨密钥碰撞率 0.0%，验证了密钥正交隔离性。
+        </div>
+        <p class="exp-desc">采用最大响应准则，用候选解码密钥集交叉评估文本响应。正确密钥可恢复一致的绿名单使 Z-score 显著拉升；错误密钥解码时绿名单与实际 token 分布完全解耦，响应坍缩至无水印水平。混淆矩阵对角线呈深蓝极化，表明只要为不同模型分配独立正交密钥，闭域环境下主动水印溯源具备绝对可行性与极高精准度。</p>
+        <div class="exp-img-wrap">
+          <img src="/static/exp_wm.png" alt="图5-1 KGW水印归因混淆矩阵" />
+        </div>
+      </section>
+
+      <!-- ========== 5.2 被动指纹实验 ========== -->
+      <div class="exp-section-title">
+        <h2>被动指纹实验</h2>
+        <span class="sec-sub">语义分布 · 跨域迁移 · 代际演进</span>
+      </div>
+
+      <!-- 5.2.1 语义几何结构与天然区分度 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验三</span>
+          <h2>语义几何结构与天然区分度</h2>
+        </div>
+        <div class="exp-conclusion">
+无需任何训练，Qwen各版本在语义空间已呈现天然的"带状分离"与"簇状聚集"，证明"版本指纹"是模型内生的。
+        </div>
+        <p class="exp-desc">在不经过任何监督标签或分类器训练的无监督状态下，仅提取句级语义向量进行 t-SNE 降维，即可观察到 Qwen1.5、Qwen2、Qwen2.5 在二维空间中呈现明显几何结构，且在各新闻领域有一定偏差。这证实：大模型版本迭代不仅改变了参数权重，也重塑了其输出文本在语言表征空间中的统计与结构偏好——为利用文风指纹进行细粒度版本溯源提供了存在性前提。</p>
+        <div class="exp-img-wrap">
+          <img src="/static/exp1.png" alt="图5-2 领域内t-SNE降维可视化" />
+        </div>
+      </section>
+
+      <!-- 5.2.2 跨领域迁移与联合训练 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验四</span>
+          <h2>跨领域迁移与联合训练</h2>
+        </div>
+        <div class="exp-conclusion">
+指纹具有强领域依赖性，科技领域形成"孤岛"（迁移准确率＜40%）；而全领域联合训练可将科技识别准确率从 38.3% 填平至 83.3%。
+        </div>
+        <p class="exp-desc">留一域交叉验证显示：单一领域训练迁移至其他领域时准确率普遍下降，科技领域呈显著"孤岛效应"——其高密度专业术语与强事实约束形成高度特化的"专业语体"，迁移准确率均低于 38%（接近随机）。而教育与时政间存在良好双向迁移（平均 58%~59%）。递进式联合训练进一步表明：文风指纹由"通用写作惯性（共性指纹）"与"特定语域偏好（特性指纹）"共同构成，多领域联合训练能成功"填平"科技孤岛。</p>
+        <div class="heatmap-table">
+          <table>
+            <thead>
+              <tr>
+                <th class="corner">训练↓ 测试→</th>
+                <th>Sports</th>
+                <th>Technology</th>
+                <th>Education</th>
+                <th>Politics</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-label">Sports</td>
+                <td class="diag">79.5%</td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:30.8%"></div><span>30.8%</span></div></td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:39.9%"></div><span>39.9%</span></div></td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:42.9%"></div><span>42.9%</span></div></td>
+              </tr>
+              <tr>
+                <td class="row-label">Technology</td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:34.2%"></div><span>34.2%</span></div></td>
+                <td class="diag">81.3%</td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:39.1%"></div><span>39.1%</span></div></td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:31.0%"></div><span>31.0%</span></div></td>
+              </tr>
+              <tr>
+                <td class="row-label">Education</td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:53.5%"></div><span>53.5%</span></div></td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:39.8%"></div><span>39.8%</span></div></td>
+                <td class="diag">69.3%</td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:58.1%"></div><span>58.1%</span></div></td>
+              </tr>
+              <tr>
+                <td class="row-label">Politics</td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:42.8%"></div><span>42.8%</span></div></td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:33.3%"></div><span>33.3%</span></div></td>
+                <td><div class="ht-bar-wrap"><div class="ht-bar" style="width:51.7%"></div><span>51.7%</span></div></td>
+                <td class="diag">72.6%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="exp-img-wrap">
+          <img src="/static/exp3.png" alt="图5-4 领域联合训练结果（科技孤岛填平）" />
+        </div>
+        <div class="exp-img-cap">图5-3 跨领域迁移概率矩阵（表） · 图5-4 领域联合训练结果（图）</div>
+      </section>
+
+      <!-- 5.2.3 代际演进与风格漂移 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验五</span>
+          <h2>代际演进与风格漂移分析</h2>
+        </div>
+        <div class="exp-conclusion">
+文风指纹差异随代际推进递减：Q1.5 vs Q2 区分度最高（平均89.0%），Q2 vs Q2.5 整体下降（平均77.5%，时政低至69.8%）。
+        </div>
+        <div class="exp-stats-row">
+          <div class="exp-stat-item">
+            <span class="exp-stat-num high">89.2%</span>
+            <span class="exp-stat-label">Qwen1.5 vs Qwen2.5<br>跨代累积效应</span>
+          </div>
+          <div class="exp-stat-item">
+            <span class="exp-stat-num mid">89.0%</span>
+            <span class="exp-stat-label">Qwen1.5 vs Qwen2<br>结构性升级</span>
+          </div>
+          <div class="exp-stat-item">
+            <span class="exp-stat-num low">77.5%</span>
+            <span class="exp-stat-label">Qwen2 vs Qwen2.5<br>增量优化趋同</span>
+          </div>
+          <div class="exp-stat-item">
+            <span class="exp-stat-num low">69.8%</span>
+            <span class="exp-stat-label">时政领域<br>最易混淆</span>
+          </div>
+        </div>
+        <p class="exp-desc">Qwen1.5 与 Qwen2 的区分度最高，推测源于早期大版本升级带来的架构与对齐策略的结构性跃迁；而 Qwen2 与 Qwen2.5 之间区分度整体下降，尤其在时政领域低至 69.8%，反映后期增量优化使模型文风渐趋稳定。这表明文风指纹的差异幅度随模型代际推进呈递减趋势。</p>
+        <div class="exp-img-wrap">
+          <img src="/static/exp4.png" alt="图5-5 版本对区分度" />
+        </div>
+      </section>
+
+      <!-- ========== 5.3 方法对比与能力边界 ========== -->
+      <div class="exp-section-title">
+        <h2>方法对比与能力边界</h2>
+        <span class="sec-sub">特征消融 · 鲁棒性衰减 · 共同脆弱性</span>
+      </div>
+
+      <!-- 5.3.1 特征消融与特征博弈 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验六</span>
+          <h2>被动检测的特征消融与特征博弈分析</h2>
+        </div>
+        <div class="exp-conclusion">
+与"特征越深越好"的教条相反：TF-IDF 词频指纹主导贡献（移除↓6.83%，单一即达78.9%），而 RoBERTa 深层语义反成"负贡献"（移除后准确率↑4.83%）。
+        </div>
+        <div class="ablation-table">
+          <div class="ablation-row header">
+            <span>特征配置</span><span>准确率变化</span><span>说明</span>
+          </div>
+          <div class="ablation-row">
+            <span>移除 TF-IDF</span>
+            <span class="down">↓ 6.83%</span>
+            <span>核心词频指纹，主导贡献</span>
+          </div>
+          <div class="ablation-row">
+            <span>移除表层特征</span>
+            <span class="down">↓ 2.77%</span>
+            <span>句法风格特征，尺度不变的结构补充</span>
+          </div>
+          <div class="ablation-row">
+            <span>移除 RoBERTa</span>
+            <span class="up">↑ 4.83%</span>
+            <span>短文本深层语义引入伪语义噪声（负贡献）</span>
+          </div>
+          <div class="ablation-row highlight">
+            <span>仅 TF-IDF</span>
+            <span class="up">78.9%</span>
+            <span>单一最优，甚至高于全特征拼接</span>
+          </div>
+          <div class="ablation-row">
+            <span>仅表层特征</span>
+            <span class="low-acc">64.5%</span>
+            <span>提供结构性补充</span>
+          </div>
+          <div class="ablation-row">
+            <span>仅 RoBERTa</span>
+            <span class="low-acc">58.9%</span>
+            <span>最低，决策边界受噪声污染</span>
+          </div>
+          <div class="ablation-row">
+            <span>全特征拼接</span>
+            <span>75.7%</span>
+            <span>基线组合</span>
+          </div>
+        </div>
+        <div class="exp-img-wrap">
+          <img src="/static/exp_ablation.png" alt="图5-6 消融实验分析（特征重要性 / 单特征性能）" />
+        </div>
+      </section>
+
+      <!-- 5.3.2 鲁棒性衰减对比 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验七</span>
+          <h2>两种检测方法的鲁棒性衰减对比</h2>
+        </div>
+        <div class="exp-conclusion">
+两种范式在改写攻击下衰减模式不同：主动水印呈"临界断崖"（20%替换即断崖式下跌），被动指纹呈"阶跃坍塌"（轻度润色即从89.00%骤降至49.00%）。
+        </div>
+        <p class="exp-desc">对带水印文本施加 0%~30% 随机替换攻击，对被动分类器施加 L1 轻度润色 / L2 句式重构 / L3 深度改写。主动水印在 10% 替换下仍保持 57.0%~70.0% 检出率，但 20% 时 TPR 断崖式跌至 13.0%~34.7%，30% 趋近失效（0.0%~11.0%）——因随机替换打断了作为 PRNG 种子的前置 token 链条。被动指纹基线 89.00%，仅需 L1 轻度润色即剧降至 49.00%，L2/L3 进一步衰减至 40.67%/43.67%，逼近三分类随机基准（33.33%）——因改写直接抹去或重塑了 TF-IDF 词汇偏好。</p>
+        <div class="exp-img-pair">
+          <div>
+            <div class="exp-img-wrap">
+              <img src="/static/exp_robust_passive.jpg" alt="图5-7 被动指纹鲁棒性衰减" />
+            </div>
+            <div class="exp-img-cap">图5-7 被动指纹在改写攻击下的阶跃坍塌</div>
+          </div>
+          <div>
+            <div class="exp-img-wrap">
+              <img src="/static/exp_robust_active.png" alt="图5-8 主动水印鲁棒性衰减" />
+            </div>
+            <div class="exp-img-cap">图5-8 主动水印在替换攻击下的临界断崖</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5.3.3 机理对比与共同脆弱性 -->
+      <section class="card exp-card">
+        <div class="exp-header">
+          <span class="exp-tag">实验八</span>
+          <h2>两种方法的机理对比与共同脆弱性</h2>
+        </div>
+        <div class="exp-conclusion">
+两种范式均未建立深层语义不变性，在同义替换、语序调整下呈现共同脆弱性；工程实践须构建"主动预警 + 被动巡查"的双层级联防御。
+        </div>
+        <div class="heatmap-table">
+          <table>
+            <thead>
+              <tr>
+                <th class="corner">对比维度</th>
+                <th>主动水印（KGW）</th>
+                <th>被动指纹（统计+TF-IDF）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="row-label">检测原理</td><td>PRNG 种子链 · 绿名单概率偏置</td><td>词频 / 表层统计文风指纹</td></tr>
+              <tr><td class="row-label">是否需模型配合</td><td>需生成端嵌入密钥</td><td>无需，无侵入巡查</td></tr>
+              <tr><td class="row-label">无攻击精度</td><td>TPR 83%~91%，归因 100%</td><td>四分类平均 89.0%</td></tr>
+              <tr><td class="row-label">响应速度</td><td>毫秒级</td><td>轻量快速</td></tr>
+              <tr><td class="row-label">改写鲁棒性</td><td>临界断崖（20% 替换即失效）</td><td>阶跃坍塌（轻度润色即降至 49%）</td></tr>
+              <tr><td class="row-label">共同脆弱性</td><td colspan="2" style="text-align:center;color:#e53e3e;font-weight:700;">均缺乏语义不变性表达，改写扰动下同步失效</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="exp-desc">主动水印依赖局部 token 序列连续性维持 PRNG 种子链，被动指纹依赖高频词与表层句式，二者均未建立深层语义不变性。引入 RoBERTa 等深层语义特征在短文本改写场景下又易引发过拟合与准确率下降。因此单防范式难以应对复杂对抗环境，须融合主动水印的"强源头归因"与被动指纹的"无侵入巡查"，构建双层级联防御架构以克服单一方法的鲁棒性边界。</p>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="/static/main.js"></script>
+</body>
+</html>

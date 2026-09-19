@@ -1,0 +1,8 @@
+flask>=2.0.0
+numpy>=1.21.0
+joblib>=1.0.0
+jieba>=0.42.1
+scikit-learn>=1.0.0
+# 主动水印检测所需（缺失时网页仍可运行，但会自动跳过水印检测）
+torch>=2.0.0
+transformers>=4.37.0
