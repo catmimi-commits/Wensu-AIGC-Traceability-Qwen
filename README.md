@@ -1,6 +1,5 @@
 # Wensu-AIGC-Traceability-Qwen
-本项目面向中文新闻概括场景的 AIGC 双轨制溯源，相关实验融合正交 KGW 主动水印与轻量化浅层文风指纹，辅助实现大模型代际版本（Qwen1.5/2/2.5）精准归因与全网巡查。 A dual-track AIGC attribution system for Chinese news summarization. Integrates orthogonal KGW watermarks and lightweight stylistic fingerprints for precise LLM version tracking (Qwen1.5/2/2.5) and passive screening.
-# Wensu-AIGC-Traceability-Qwen
+本项目面向中文新闻概括场景的 AIGC 双轨制溯源，相关实验融合正交 KGW 主动水印与轻量化浅层文风指纹。开源提供相关源码及实验用数据集，以辅助实现大模型代际版本（Qwen1.5/2/2.5）精准归因与全网巡查。 
 
 ## 项目简介
 - 场景：中文新闻短文本（<300字）概括性改写
